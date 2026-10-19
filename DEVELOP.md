@@ -90,11 +90,35 @@ To try an idea, add a script, run it with `-update-screens`, and read the
 golden file; then keep it. After changing how anything is drawn, the diff of
 the golden files is the review. `task bench` times typing and drawing in a folder of 100,000 files.
 
+## Examples and the browser demo
+
+`examples` is a module of its own, so go-booba and the demo's needs stay out
+of the library's `go.mod`; it points at the library with a `replace`.
+`examples/pick` is a chooser over the real filesystem; `examples/demo` is the
+chooser over a pretend home folder (`tree.go`, built with `internal/memfs`,
+whose reads are slowed on purpose), run by booba natively and in the browser.
+
+```sh
+task demo                     # in this terminal (-- -layout columns)
+task build-wasm-site          # web/: the WASM demo, booba's runtime, licenses
+task serve-wasm-site          # http://localhost:8000/ntfilepicker/
+task check-site               # the site's assets, and the demo driven under Node
+```
+
+The browser build uses `wasm.work`, which adds Bubble Tea and clipboard forks
+that build for js/wasm; native builds use upstream. `web/index.html`,
+`site.css` and `site.js` are tracked; the rest of `web/` is generated. The
+Pages workflow runs `task ci` and publishes `web/`.
+`scripts/smoke-demo.mjs` drives the real WASM binary through the booba bridge:
+it filters, opens a folder and picks a file. `task notices` rewrites
+`THIRD_PARTY_NOTICES.md` from both builds' dependencies.
+
 ## Verification
 
-`task ci` is the gate: formatting, `go mod tidy`/`verify`, the race tests, vet,
-a Windows build, the example, and `govulncheck` (needs the network). It runs
-with `GOWORK=off`, so a local workspace cannot hide a dependency problem.
+`task ci` is the gate: formatting, `go mod tidy`/`verify` of both modules, the
+race tests, vet, Windows builds, the examples, the WASM site and its checks,
+the notices, and `govulncheck` of native and WASM builds (needs the network).
+It runs with `GOWORK=off`, so a local workspace cannot hide a dependency problem.
 
 The library uses upstream Bubble Tea. gloss builds it with its own renderer fork
 and in its browser demo; the scripts' golden screens do not depend on either.

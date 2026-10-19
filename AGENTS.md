@@ -13,7 +13,15 @@ DEVELOP.md is for working on it; keep them, this file and CHANGELOG consistent.
   README's "Taking it out" before making it public.
 - `internal/pickercfg`: how a script's `option` lines build the chooser, and what
   `state` reads. Its emoji marks are a sample, not any host's.
-- `internal/cmd/play`: the playground. `examples/pick`: a complete host.
+- `internal/memfs`: the in-memory filesystem the harness and the demo share.
+- `internal/cmd/play`: the playground.
+- `examples` (its own module): `pick`, a complete host over the real
+  filesystem; `demo`, the chooser over a pretend home folder, native and WASM
+  through booba; `internal/demorun`, the booba action-bar wrapper.
+- `web`: the demo page (`index.html`, `site.css`, `site.js` tracked; the rest
+  generated). `wasm.work`: Bubble Tea/clipboard forks for WASM only.
+- `scripts`: the site check and the Node smoke test of the WASM demo.
+- `internal/tools/notices`: `THIRD_PARTY_NOTICES.md` for both builds.
 - `testdata/scripts`: the scripts and their `.golden` screens.
 
 ## Conventions
@@ -31,6 +39,7 @@ DEVELOP.md is for working on it; keep them, this file and CHANGELOG consistent.
 
 ## Verification
 
-`task ci` before finishing (GOWORK=off): fmt, tidy/verify, race tests, vet,
-Windows build, the example, govulncheck (network). `task test` and
-`task screens` while working.
+`task ci` before finishing (GOWORK=off): fmt, tidy/verify of both modules, race
+tests, vet, Windows builds, the examples, the WASM site with its checks and smoke
+test (Node 18+), notices, govulncheck (network). `task test` and `task screens`
+while working. The demo's tree is made up: keep real names and paths out of it.

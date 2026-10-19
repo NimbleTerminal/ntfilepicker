@@ -11,3 +11,7 @@
   or what the host sets.
 * Add `examples/pick`, a complete chooser that prints the chosen path, and
   use it for the VHS recordings in place of gloss.
+* Add a browser demo: `examples/demo` runs the chooser over a pretend home
+  folder, natively and as WASM through booba, with a layout picker, action
+  bar, and a Node smoke test. Examples are now a module of their own; the
+  harness's in-memory filesystem moves to `internal/memfs` to share with it.

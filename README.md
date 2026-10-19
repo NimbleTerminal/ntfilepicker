@@ -13,11 +13,20 @@ breadcrumbs, or the mouse. It is the chooser behind
 gloss: marks for the kinds of file, the sort, and which files may be chosen
 come in by options. Any `fs.ReadDirFS` will do.
 
+[Try it in your browser](https://nimbleterminal.github.io/ntfilepicker/), over a
+pretend home folder: nothing is read from your computer.
+
 Module `nimbleterminal.dev/ntfilepicker`, Go 1.26.8+.
 
 ```sh
 go get nimbleterminal.dev/ntfilepicker
-go run nimbleterminal.dev/ntfilepicker/examples/pick@latest ~/Downloads
+```
+
+To try the examples from a clone:
+
+```sh
+go -C examples run ./pick ~/Downloads   # prints the path you pick
+go -C examples run ./demo               # the browser demo, in your terminal
 ```
 
 ## Use
@@ -45,6 +54,8 @@ if path, ok := picker.Chosen(); ok {
 
 [`examples/pick`](examples/pick/main.go) is a complete program: it prints the
 chosen path, and draws on stderr so that `$(pick)` works.
+[`examples/demo`](examples/demo/main.go) is the browser demo: marks, kinds of
+file, a file that cannot be chosen, and status lines below the chooser.
 
 Folders are read by commands and cached; reads that come back after the
 chooser has moved on are dropped. Names are drawn as names: control bytes as
@@ -87,9 +98,14 @@ for a host that can hand files to other apps.
 ## Developing
 
 See [DEVELOP.md](DEVELOP.md): the tests are scripts with readable golden
-screens, which also play in the terminal and record as VHS GIFs. `task ci`
-is the gate.
+screens, which also play in the terminal and record as VHS GIFs. `task demo`
+runs the demo; `task serve-wasm-site` serves the browser one. `task ci` is the gate.
 
 ## License
 
-MIT, see [LICENSE.txt](LICENSE.txt).
+Released under the [MIT License](./LICENSE.txt).  Part of the Nimble Terminal platform.
+
+Copyright (c) 2026 [Neomantra Corp](https://www.neomantra.com).
+
+----
+Made with :heart: and :fire: by the team behind [Nimble Terminal](https://nimbleterminal.com).

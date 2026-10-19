@@ -23,22 +23,27 @@ tasks:
     desc: 'Go tidy all the things'
     cmds:
       - go mod tidy
+      - go -C examples mod tidy
 
   go-update:
     desc: 'Go update all the dependencies'
     cmds:
       - go get -u ./...
+      - go -C examples get -u ./...
+      - go -C examples get -u tool
       - task: go-tidy
 
   test:
     desc: 'Run the tests and the scripts'
     cmds:
       - go test -mod=readonly ./...
+      - go -C examples test -mod=readonly ./...
 
   test-race:
     desc: 'Run the tests with the race detector'
     cmds:
       - go test -mod=readonly -race ./...
+      - go -C examples test -mod=readonly -race ./...
 
   screens:
     desc: 'Rewrite the golden screens of the scripts, then read the diff'
@@ -54,21 +59,34 @@ tasks:
     desc: 'Run go vet'
     cmds:
       - go vet -mod=readonly ./...
+      - go -C examples vet -mod=readonly ./...
 
   build:
-    desc: 'Build the example chooser into bin/pick'
+    desc: 'Build the examples into bin/'
     cmds:
-      - go build -mod=readonly -o bin/pick ./examples/pick
+      - go -C examples build -mod=readonly -o ../bin/pick ./pick
+      - go -C examples build -mod=readonly -o ../bin/demo ./demo
     sources:
       - '*.go'
-      - examples/pick/*.go
+      - internal/memfs/*.go
+      - examples/**/*.go
+      - examples/go.mod
+      - examples/go.sum
       - go.mod
       - go.sum
     generates:
       - bin/pick
+      - bin/demo
+
+  demo:
+    desc: 'Run the demo over a pretend home folder (-- -layout columns)'
+    interactive: true
+    cmds: ['go -C examples run ./demo {{.CLI_ARGS}}']
 
   clean:
-    desc: 'Remove built programs and recordings'
+    desc: 'Remove built programs, recordings, and generated site files'
+    deps:
+      - clean-wasm-site
     cmds:
       - rm -rf bin dist .task
 
@@ -143,24 +161,90 @@ tasks:
         vars: {SCRIPT: '{{.ITEM}}'}
 
 ###############################################################################
-# Verification
+# Demo website via booba
+
+  build-wasm:
+    desc: 'Build the browser demo into web/demos/'
+    env:
+      GOWORK: '{{.ROOT_DIR}}/wasm.work'
+      GOOS: js
+      GOARCH: wasm
+      CGO_ENABLED: '0'
+    cmds:
+      - mkdir -p web/demos
+      - go -C examples build -mod=readonly -o ../web/demos/demo.wasm ./demo
+
+  build-wasm-site:
+    desc: 'Build the WASM demo site into web/ and export the pinned booba runtime'
+    cmds:
+      - task: build-wasm
+      - go -C examples tool booba-assets --no-index ../web/
+      - cp LICENSE.txt web/LICENSE
+      - cp THIRD_PARTY_NOTICES.md web/
+
+  check-site:
+    desc: 'Check site script syntax, required assets, and the demo under Node'
+    cmds:
+      - node --check web/site.js
+      - node scripts/check-site.mjs
+      - node scripts/smoke-demo.mjs
+
+  serve-wasm-site:
+    desc: 'Serve web/ at http://localhost:8000/ntfilepicker/ (matches GH Pages prefix)'
+    deps:
+      - build-wasm-site
+    vars:
+      SERVE_DIR: /tmp/ntfilepicker-site
+    cmds:
+      - mkdir -p "{{.SERVE_DIR}}"
+      - ln -sfn "$PWD/web" "{{.SERVE_DIR}}/ntfilepicker"
+      - python3 -m http.server 8000 --directory "{{.SERVE_DIR}}"
+
+  clean-wasm-site:
+    desc: 'Remove generated WASM demo site artifacts'
+    cmds:
+      - rm -rf web/booba web/ghostty-web web/demos
+      - rm -f web/wasm_exec.js web/LICENSE web/THIRD_PARTY_NOTICES.md
+
+###############################################################################
+# Dependency notices and verification
+
+  notices:
+    desc: 'Regenerate notices for native and WASM demo dependencies'
+    cmds:
+      - go run ./internal/tools/notices > THIRD_PARTY_NOTICES.md
+
+  notices-check:
+    desc: 'Verify that dependency notices are current'
+    cmds:
+      - go run ./internal/tools/notices | cmp -s - THIRD_PARTY_NOTICES.md
 
   vuln:
     desc: 'Scan dependencies for known vulnerabilities (requires network)'
     vars:
       GOVULNCHECK_VERSION: v1.8.0
     cmds:
-      - GOBIN="$PWD/.task/bin" go install golang.org/x/vuln/cmd/govulncheck@{{.GOVULNCHECK_VERSION}}
-      - .task/bin/govulncheck -test ./...
+      # Build a host executable first: setting GOOS=js during go install
+      # would build the scanner itself for WASM instead of scanning WASM code.
+      - GOWORK=off GOOS= GOARCH= GOBIN="$PWD/.task/bin" go install golang.org/x/vuln/cmd/govulncheck@{{.GOVULNCHECK_VERSION}}
+      - GOWORK=off .task/bin/govulncheck -test ./...
+      - cd examples && GOWORK=off ../.task/bin/govulncheck -test ./...
+      - GOWORK="$PWD/wasm.work" GOOS=js GOARCH=wasm .task/bin/govulncheck ./examples/...
 
   ci:
     desc: 'Check formatting, dependencies, tests, builds, and known vulnerabilities'
     cmds:
       - test -z "$(gofmt -l .)"
       - go mod tidy -diff
+      - go -C examples mod tidy -diff
       - go mod verify
+      - go -C examples mod verify
       - task: test-race
       - task: vet
       - GOOS=windows GOARCH=amd64 go build -mod=readonly -o /dev/null ./...
+      - GOOS=windows GOARCH=amd64 go -C examples build -mod=readonly -o /dev/null ./...
       - task: build
+      - task: build-wasm-site
+      - task: check-site
+      - task: notices-check
       - task: vuln
