@@ -1,4 +1,4 @@
-package browsetest
+package pickertest
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 // TapeOptions says how a script becomes a VHS tape.
 type TapeOptions struct {
 	// Command starts the program in the recording, as typed at a shell:
-	// "gloss examples". The script's own start folder and fs part are for the
+	// "pick .". The script's own start folder and fs part are for the
 	// harness; the recording runs against a real folder.
 	Command string
 	// Output is the file the tape records, such as "browser.gif".
@@ -62,7 +62,7 @@ func Tape(file string, o TapeOptions) (string, error) {
 		}
 	}
 	var b strings.Builder
-	fmt.Fprintf(&b, "# Made from %s by browsetest.Tape; change the script, not this.\n", baseName(file))
+	fmt.Fprintf(&b, "# Made from %s by pickertest.Tape; change the script, not this.\n", baseName(file))
 	b.WriteString("# The recording runs against a real folder: the script's fs part is not used.\n")
 	if o.Output != "" {
 		fmt.Fprintf(&b, "Output %s\n", strconv.Quote(o.Output)) // Quoted: VHS reads a bare absolute path as commands.

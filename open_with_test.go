@@ -1,19 +1,19 @@
-package browse_test
+package ntfilepicker_test
 
 import (
 	tea "charm.land/bubbletea/v2"
-	"nimbleterminal.dev/gloss/internal/browse"
-	"nimbleterminal.dev/gloss/internal/browse/browsetest"
+	"nimbleterminal.dev/ntfilepicker"
+	"nimbleterminal.dev/ntfilepicker/internal/pickertest"
 	"testing"
 )
 
 func TestOpenWithIntent(t *testing.T) {
-	for _, layout := range []browse.Layout{browse.LayoutList, browse.LayoutColumns, browse.LayoutPlaces} {
-		d := browsetest.New(t, browse.New(browsetest.NewFS("d/a.txt"), "/d", browse.WithLayout(layout)), 80, 20)
+	for _, layout := range []ntfilepicker.Layout{ntfilepicker.LayoutList, ntfilepicker.LayoutColumns, ntfilepicker.LayoutPlaces} {
+		d := pickertest.New(t, ntfilepicker.New(pickertest.NewFS("d/a.txt"), "/d", ntfilepicker.WithLayout(layout)), 80, 20)
 		d.Press("alt+enter")
 		found := false
 		for _, msg := range d.Messages {
-			if v, ok := msg.(browse.OpenWithMsg); ok {
+			if v, ok := msg.(ntfilepicker.OpenWithMsg); ok {
 				found = true
 				if v.Path != "/d/a.txt" || v.Directory {
 					t.Fatalf("%+v", v)

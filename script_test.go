@@ -1,12 +1,12 @@
-package browse_test
+package ntfilepicker_test
 
 import (
 	"testing"
 
-	"nimbleterminal.dev/gloss/internal/browse/browsecfg"
-	"nimbleterminal.dev/gloss/internal/browse/browsetest"
+	"nimbleterminal.dev/ntfilepicker/internal/pickercfg"
+	"nimbleterminal.dev/ntfilepicker/internal/pickertest"
 )
 
 func TestScripts(t *testing.T) {
-	browsetest.RunDir(t, browsecfg.Config(), "testdata/scripts")
+	pickertest.RunDir(t, pickercfg.Config(), "testdata/scripts")
 }

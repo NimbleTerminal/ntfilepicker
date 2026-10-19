@@ -1,7 +1,7 @@
-// Package browsecfg is how the browsetest harness builds and reads the
+// Package pickercfg is how the pickertest harness builds and reads the
 // chooser: its options by name, and the state a script may check. It is
 // shared by the tests and the playground.
-package browsecfg
+package pickercfg
 
 import (
 	tea "charm.land/bubbletea/v2"
@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"strings"
 
-	"nimbleterminal.dev/gloss/internal/browse"
-	"nimbleterminal.dev/gloss/internal/browse/browsetest"
+	"nimbleterminal.dev/ntfilepicker"
+	"nimbleterminal.dev/ntfilepicker/internal/pickertest"
 )
 
 // Options a script may set, with `option NAME VALUE`:
@@ -21,7 +21,7 @@ import (
 //	hidden true                  show dot-files
 //	home /home/evan              where ~ leads (default /home/evan)
 //	marker kinds                 mark folders and pictures with one-cell glyphs
-//	marker emoji                 mark files by kind with emoji, as gloss does (two cells wide)
+//	marker emoji                 mark files by kind with emoji (two cells wide)
 //	only .png                    only that extension may be chosen
 //	columns N                    at most N columns
 //	dirsonly true                Tab completes folders alone (as in go-to)
@@ -35,32 +35,32 @@ const Options = "layout, hidden, home, marker, only, columns, filters, active, d
 var StateKeys = []string{"dir", "filter", "current", "chosen", "layout", "types"}
 
 // Config is the harness's way of making and reading the chooser.
-func Config() browsetest.Config[browse.Model] {
-	return browsetest.Config[browse.Model]{
+func Config() pickertest.Config[ntfilepicker.Model] {
+	return pickertest.Config[ntfilepicker.Model]{
 		Strict: true,
 		Message: func(msg tea.Msg) map[string]string {
-			if v, ok := msg.(browse.OpenWithMsg); ok {
+			if v, ok := msg.(ntfilepicker.OpenWithMsg); ok {
 				return map[string]string{"open-with": v.Path}
 			}
 			return nil
 		},
-		New: func(fsys *browsetest.FS, start string, o map[string]string) browse.Model {
-			opts := []browse.Option{browse.WithHome("/home/evan")}
+		New: func(fsys *pickertest.FS, start string, o map[string]string) ntfilepicker.Model {
+			opts := []ntfilepicker.Option{ntfilepicker.WithHome("/home/evan")}
 			if v, ok := o["layout"]; ok {
-				l, ok := browse.ParseLayout(v)
+				l, ok := ntfilepicker.ParseLayout(v)
 				if !ok {
 					panic("unknown layout " + v)
 				}
-				opts = append(opts, browse.WithLayout(l))
+				opts = append(opts, ntfilepicker.WithLayout(l))
 			}
 			if o["hidden"] == "true" {
-				opts = append(opts, browse.WithShowHidden(true))
+				opts = append(opts, ntfilepicker.WithShowHidden(true))
 			}
 			if v, ok := o["home"]; ok {
-				opts = append(opts, browse.WithHome(v))
+				opts = append(opts, ntfilepicker.WithHome(v))
 			}
 			if o["marker"] == "kinds" {
-				opts = append(opts, browse.WithMarker(func(e fs.DirEntry) string {
+				opts = append(opts, ntfilepicker.WithMarker(func(e fs.DirEntry) string {
 					switch {
 					case e.IsDir():
 						return "▪"
@@ -71,36 +71,36 @@ func Config() browsetest.Config[browse.Model] {
 				}))
 			}
 			if o["marker"] == "emoji" {
-				opts = append(opts, browse.WithMarker(emojiMark))
+				opts = append(opts, ntfilepicker.WithMarker(emojiMark))
 			}
 			if o["only"] != "" {
 				ext := o["only"]
-				opts = append(opts, browse.WithSelectable(func(e fs.DirEntry) bool { return path.Ext(e.Name()) == ext }))
+				opts = append(opts, ntfilepicker.WithSelectable(func(e fs.DirEntry) bool { return path.Ext(e.Name()) == ext }))
 			}
 			if o["linksfollowed"] == "true" {
-				opts = append(opts, browse.WithLinksFollowed())
+				opts = append(opts, ntfilepicker.WithLinksFollowed())
 			}
 			if o["dirsonly"] == "true" {
-				opts = append(opts, browse.WithDirsOnlyCompletion(true))
+				opts = append(opts, ntfilepicker.WithDirsOnlyCompletion(true))
 			}
 			if v, ok := o["columns"]; ok {
 				n, _ := strconv.Atoi(v)
-				opts = append(opts, browse.WithMaxColumns(n))
+				opts = append(opts, ntfilepicker.WithMaxColumns(n))
 			}
 			if o["filters"] == "kinds" {
-				kind := func(name, mark string, exts ...string) browse.Filter {
-					return browse.Filter{Name: name, Mark: mark, Match: func(e fs.DirEntry) bool { return slices.Contains(exts, path.Ext(strings.ToLower(e.Name()))) }}
+				kind := func(name, mark string, exts ...string) ntfilepicker.Filter {
+					return ntfilepicker.Filter{Name: name, Mark: mark, Match: func(e fs.DirEntry) bool { return slices.Contains(exts, path.Ext(strings.ToLower(e.Name()))) }}
 				}
-				opts = append(opts, browse.WithFilters([]browse.Filter{
+				opts = append(opts, ntfilepicker.WithFilters([]ntfilepicker.Filter{
 					kind("Pictures", "▫", ".png", ".jpg"), kind("Documents", "▪", ".md", ".txt"), kind("Data", "▤", ".csv"),
 				}))
 				if a := o["active"]; a != "" {
-					opts = append(opts, browse.WithActiveFilters(strings.Split(a, ",")...))
+					opts = append(opts, ntfilepicker.WithActiveFilters(strings.Split(a, ",")...))
 				}
 			}
-			return browse.New(fsys, start, opts...)
+			return ntfilepicker.New(fsys, start, opts...)
 		},
-		Probe: func(m browse.Model) map[string]string {
+		Probe: func(m ntfilepicker.Model) map[string]string {
 			chosen, _ := m.Chosen()
 			current := ""
 			if e := m.Current(); e != nil {
@@ -123,8 +123,8 @@ func Config() browsetest.Config[browse.Model] {
 	}
 }
 
-// emojiMarks are gloss's marks of the kinds of file, by extension, as
-// internal/app draws them: the browse package has none of its own.
+// emojiMarks are sample marks of the kinds of file, by extension, two cells
+// wide as emoji are; the chooser has none of its own, and a host brings its own.
 var emojiMarks = map[string]string{
 	".png": "📷", ".jpg": "📷", ".jpeg": "📷", ".gif": "📷", ".webp": "📷", ".heic": "📷",
 	".svg": "🎨", ".mmd": "🧜", ".mermaid": "🧜", ".pdf": "📕", ".stl": "🧊", ".3mf": "🧊", ".obj": "🧊", ".ply": "🧊",

@@ -1,4 +1,4 @@
-package browse
+package ntfilepicker
 
 import (
 	"io/fs"

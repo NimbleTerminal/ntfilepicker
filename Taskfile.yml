@@ -1,0 +1,166 @@
+# ntfilepicker - Copyright (c) 2026 Neomantra Corp.
+
+version: '3'
+
+env:
+  GOWORK: 'off'
+
+tasks:
+  default:
+    desc: 'Default task runs the "test" and "build" tasks'
+    deps:
+      - test
+      - build
+
+  list:
+    desc: 'Lists available tasks'
+    cmds:
+      - task --list-all
+
+###############################################################################
+
+  go-tidy:
+    desc: 'Go tidy all the things'
+    cmds:
+      - go mod tidy
+
+  go-update:
+    desc: 'Go update all the dependencies'
+    cmds:
+      - go get -u ./...
+      - task: go-tidy
+
+  test:
+    desc: 'Run the tests and the scripts'
+    cmds:
+      - go test -mod=readonly ./...
+
+  test-race:
+    desc: 'Run the tests with the race detector'
+    cmds:
+      - go test -mod=readonly -race ./...
+
+  screens:
+    desc: 'Rewrite the golden screens of the scripts, then read the diff'
+    cmds:
+      - go test -mod=readonly ./... -update-screens
+
+  bench:
+    desc: 'Time typing and drawing in a folder of 100,000 files'
+    cmds:
+      - go test -mod=readonly -run '^$' -bench . .
+
+  vet:
+    desc: 'Run go vet'
+    cmds:
+      - go vet -mod=readonly ./...
+
+  build:
+    desc: 'Build the example chooser into bin/pick'
+    cmds:
+      - go build -mod=readonly -o bin/pick ./examples/pick
+    sources:
+      - '*.go'
+      - examples/pick/*.go
+      - go.mod
+      - go.sum
+    generates:
+      - bin/pick
+
+  clean:
+    desc: 'Remove built programs and recordings'
+    cmds:
+      - rm -rf bin dist .task
+
+###############################################################################
+# Playing with it
+
+  play:
+    desc: Try the chooser over an in-memory tree (-- -from ~/Downloads, -script FILE, -option layout=columns)
+    interactive: true
+    cmds: ['go run ./internal/cmd/play {{.CLI_ARGS}}']
+
+  record:
+    desc: Play with the chooser and keep what you do as a test script (NAME=mything)
+    interactive: true
+    requires:
+      vars: [NAME]
+    preconditions:
+      - sh: test ! -e testdata/scripts/{{.NAME}}.txt
+        msg: "testdata/scripts/{{.NAME}}.txt exists: pick another NAME"
+    cmds:
+      - go run ./internal/cmd/play -record testdata/scripts/{{.NAME}}.txt {{.CLI_ARGS}}
+      - go test -mod=readonly . -run 'TestScripts/{{.NAME}}$' -update-screens
+      - echo "Written testdata/scripts/{{.NAME}}.txt and its .golden; read both, add checks, then task test"
+
+  replay:
+    desc: Step through a script in the terminal, its checks shown (SCRIPT=columns)
+    interactive: true
+    requires:
+      vars: [SCRIPT]
+    cmds: ['go run ./internal/cmd/play -replay -script testdata/scripts/{{.SCRIPT}}.txt {{.CLI_ARGS}}']
+
+###############################################################################
+# Recordings
+
+  tape:
+    desc: Write a script as a VHS tape in dist (SCRIPT=columns)
+    requires:
+      vars: [SCRIPT]
+    vars:
+      CMD: '{{.CMD | default "pick ."}}'
+      KEYS: '{{.KEYS | default "alt+up=Ctrl+Up,alt+left=Ctrl+O"}}'
+      PAUSE: '{{.PAUSE | default "500ms"}}'
+    cmds:
+      - mkdir -p dist
+      - >-
+        go run ./internal/pickertest/tape
+        -cmd "{{.CMD}}" -keys "{{.KEYS}}" -pause "{{.PAUSE}}"
+        -o "dist/{{.SCRIPT}}.gif"
+        testdata/scripts/{{.SCRIPT}}.txt > dist/{{.SCRIPT}}.tape
+
+  gif:
+    desc: Record a script as a GIF in dist (SCRIPT=columns; needs vhs)
+    requires:
+      vars: [SCRIPT]
+    preconditions:
+      - sh: command -v vhs
+        msg: "vhs is not installed (brew install vhs): it records the GIF"
+    cmds:
+      - task: tape
+        vars: {SCRIPT: '{{.SCRIPT}}', CMD: '{{.CMD}}', KEYS: '{{.KEYS}}', PAUSE: '{{.PAUSE}}'}
+      # The tape types pick, so the one just built is first on the path.
+      - task: build
+      - PATH="$PWD/bin:$PATH" vhs dist/{{.SCRIPT}}.tape
+
+  gifs:
+    desc: Record the showcase scripts as GIFs in dist (needs vhs)
+    vars:
+      SCRIPTS: '{{.SCRIPTS | default "columns places filter complete2"}}'
+    cmds:
+      - for: {var: SCRIPTS, split: ' '}
+        task: gif
+        vars: {SCRIPT: '{{.ITEM}}'}
+
+###############################################################################
+# Verification
+
+  vuln:
+    desc: 'Scan dependencies for known vulnerabilities (requires network)'
+    vars:
+      GOVULNCHECK_VERSION: v1.8.0
+    cmds:
+      - GOBIN="$PWD/.task/bin" go install golang.org/x/vuln/cmd/govulncheck@{{.GOVULNCHECK_VERSION}}
+      - .task/bin/govulncheck -test ./...
+
+  ci:
+    desc: 'Check formatting, dependencies, tests, builds, and known vulnerabilities'
+    cmds:
+      - test -z "$(gofmt -l .)"
+      - go mod tidy -diff
+      - go mod verify
+      - task: test-race
+      - task: vet
+      - GOOS=windows GOARCH=amd64 go build -mod=readonly -o /dev/null ./...
+      - task: build
+      - task: vuln

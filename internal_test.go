@@ -1,4 +1,4 @@
-package browse
+package ntfilepicker
 
 import (
 	"charm.land/lipgloss/v2"
@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"nimbleterminal.dev/gloss/internal/browse/browsetest"
+	"nimbleterminal.dev/ntfilepicker/internal/pickertest"
 )
 
 func TestSplit(t *testing.T) {
@@ -32,7 +32,7 @@ func TestSplit(t *testing.T) {
 }
 
 func TestResolve(t *testing.T) {
-	m := New(browsetest.NewFS(), "/home/evan/projects", WithHome("/home/evan"))
+	m := New(pickertest.NewFS(), "/home/evan/projects", WithHome("/home/evan"))
 	for typed, want := range map[string]string{
 		"":          "/home/evan/projects",
 		"./":        "/home/evan/projects",
@@ -52,7 +52,7 @@ func TestResolve(t *testing.T) {
 			t.Errorf("resolve(%q) = %q, want %q", typed, got, want)
 		}
 	}
-	none := New(browsetest.NewFS(), "/x", WithHome(""))
+	none := New(pickertest.NewFS(), "/x", WithHome(""))
 	if got := none.resolve("~/"); got != "/x/~" {
 		t.Errorf("with no home, ~/ is an ordinary name: %q", got)
 	}
@@ -61,7 +61,7 @@ func TestResolve(t *testing.T) {
 // A reading begun before a reload, arriving after it, must not stand in for
 // what the reload reads.
 func TestAStaleReadingIsLetGo(t *testing.T) {
-	m := New(browsetest.NewFS("a/old.txt"), "/a")
+	m := New(pickertest.NewFS("a/old.txt"), "/a")
 	stale := m.load("/a")() // The reading begun before.
 	m.Reload()
 	if m.lists["/a"] == nil || m.lists["/a"].loaded {
@@ -78,7 +78,7 @@ func TestAStaleReadingIsLetGo(t *testing.T) {
 }
 
 func TestACrumbThatIsAnEllipsisLeadsToTheFirstFolderLeftOut(t *testing.T) {
-	m := New(browsetest.NewFS("a/b/c/d/e/f/g.txt"), "/a/b/c/d/e/f", WithHome("/zzz"))
+	m := New(pickertest.NewFS("a/b/c/d/e/f/g.txt"), "/a/b/c/d/e/f", WithHome("/zzz"))
 	m.SetSize(14, 6)
 	cs := m.crumbs()
 	if cs[0].label != "…" {
@@ -191,7 +191,7 @@ func TestCleanRunesSaysWhereEachLetterWent(t *testing.T) {
 	if !reflect.DeepEqual(at, want) {
 		t.Errorf("at = %v, want %v", at, want)
 	}
-	m := New(browsetest.NewFS(), "/")
+	m := New(pickertest.NewFS(), "/")
 	r := row{entry: fs.FileInfoToDirEntry(infoOf("x")), name: "a👨‍👩‍👧b", at: []int{6}} // The b.
 	shown := ansi.Strip(m.name(r, 20, lipgloss.NewStyle(), lipgloss.NewStyle().Underline(true)))
 	if shown != "a👨b" {

@@ -1,4 +1,4 @@
-package browse
+package ntfilepicker
 
 import (
 	"fmt"
@@ -244,8 +244,8 @@ func (m Model) detail(e fs.DirEntry, dir string) []string {
 		"Size      "+humanize.Bytes(uint64(max(info.Size(), 0))), //nolint:gosec
 		"Modified  "+info.ModTime().Format("2006-01-02 15:04"),
 		"Folder    "+cleanName(dir))
-	if !m.canChoose(e) {
-		lines = append(lines, "", "gloss cannot show this file")
+	if !m.canChoose(e) && m.unchoosable != "" {
+		lines = append(lines, "", m.unchoosable)
 	}
 	return lines
 }

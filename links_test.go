@@ -1,24 +1,24 @@
-package browse_test
+package ntfilepicker_test
 
 import (
 	"testing"
 
-	"nimbleterminal.dev/gloss/internal/browse"
-	"nimbleterminal.dev/gloss/internal/browse/browsetest"
+	"nimbleterminal.dev/ntfilepicker"
+	"nimbleterminal.dev/ntfilepicker/internal/pickertest"
 )
 
 // quiet leaves out the places, which the chooser would describe too.
-var quiet = []browse.Option{browse.WithHome("/h"), browse.WithPlaces(nil)}
+var quiet = []ntfilepicker.Option{ntfilepicker.WithHome("/h"), ntfilepicker.WithPlaces(nil)}
 
-func linksFS() *browsetest.FS {
-	return browsetest.NewFS("d/real/", "d/a -> /d/real", "d/b -> /d/real", "d/f -> /d/file", "d/file 1", "d/gone -> /nowhere")
+func linksFS() *pickertest.FS {
+	return pickertest.NewFS("d/real/", "d/a -> /d/real", "d/b -> /d/real", "d/f -> /d/file", "d/file 1", "d/gone -> /nowhere")
 }
 
 // A link is looked at once per listing, with Stat, which does not open it; and
 // not at all by a chooser whose host has already done so.
 func TestLinksAreDescribedOnceAndNeverOpened(t *testing.T) {
 	f := linksFS()
-	d := browsetest.New(t, browse.New(f, "/d", quiet...), 60, 8)
+	d := pickertest.New(t, ntfilepicker.New(f, "/d", quiet...), 60, 8)
 	if got := f.Stats(); len(got) != 4 { // a, b, f, gone.
 		t.Errorf("the chooser described %d links, want 4: %v", len(got), got)
 	}
@@ -30,7 +30,7 @@ func TestLinksAreDescribedOnceAndNeverOpened(t *testing.T) {
 	}
 
 	f = linksFS()
-	d = browsetest.New(t, browse.New(f, "/d", append(quiet, browse.WithLinksFollowed())...), 60, 8)
+	d = pickertest.New(t, ntfilepicker.New(f, "/d", append(quiet, ntfilepicker.WithLinksFollowed())...), 60, 8)
 	if got := f.Stats(); len(got) != 0 {
 		t.Errorf("a chooser told links are followed described %v", got)
 	}
@@ -45,7 +45,7 @@ func TestLinksAreDescribedOnceAndNeverOpened(t *testing.T) {
 func TestFollowLinksDoesNotOpen(t *testing.T) {
 	f := linksFS()
 	entries, _ := f.ReadDir("d")
-	out := browse.FollowLinks(f, "/d", entries)
+	out := ntfilepicker.FollowLinks(f, "/d", entries)
 	folders := 0
 	for _, e := range out {
 		if e.IsDir() {

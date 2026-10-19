@@ -1,0 +1,13 @@
+# `ntfilepicker` CHANGELOG
+
+## Unreleased
+
+* Extract gloss's file chooser (`internal/browse` at gloss e21ce3f) as its own
+  module. The package is `ntfilepicker`; its test harness, script options and
+  playground are internal (`internal/pickertest`, `internal/pickercfg`,
+  `internal/cmd/play`) until the harness has a public API of its own.
+* Add `WithUnchoosableNote`: the details of a file that cannot be chosen no
+  longer say "gloss cannot show this file", but "This file cannot be chosen"
+  or what the host sets.
+* Add `examples/pick`, a complete chooser that prints the chosen path, and
+  use it for the VHS recordings in place of gloss.

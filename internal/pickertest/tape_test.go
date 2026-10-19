@@ -1,4 +1,4 @@
-package browsetest_test
+package pickertest_test
 
 import (
 	"os"
@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"nimbleterminal.dev/gloss/internal/browse/browsetest"
+	"nimbleterminal.dev/ntfilepicker/internal/pickertest"
 )
 
 func TestTape(t *testing.T) {
@@ -28,18 +28,18 @@ snapshot here
 	if err := os.WriteFile(file, []byte(script), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	got, err := browsetest.Tape(file, browsetest.TapeOptions{Command: "gloss examples", Output: "x.gif", Pause: "200ms", Keys: map[string]string{"alt+left": "Ctrl+O"}})
+	got, err := pickertest.Tape(file, pickertest.TapeOptions{Command: "pick .", Output: "x.gif", Pause: "200ms", Keys: map[string]string{"alt+left": "Ctrl+O"}})
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := `# Made from s.txt by browsetest.Tape; change the script, not this.
+	want := `# Made from s.txt by pickertest.Tape; change the script, not this.
 # The recording runs against a real folder: the script's fs part is not used.
 Output "x.gif"
 Set FontSize 16
 Set Width 1080
 Set Height 2520
 Hide
-Type "gloss examples"
+Type "pick ."
 Enter
 Sleep 1s
 Ctrl+L
@@ -95,7 +95,7 @@ func TestTapesAreValidVHS(t *testing.T) {
 	}
 	for _, file := range files {
 		t.Run(strings.TrimSuffix(filepath.Base(file), ".txt"), func(t *testing.T) {
-			tape, err := browsetest.Tape(file, browsetest.TapeOptions{Command: "gloss examples", Output: "out.gif"})
+			tape, err := pickertest.Tape(file, pickertest.TapeOptions{Command: "pick .", Output: "out.gif"})
 			if err != nil {
 				t.Fatal(err)
 			}

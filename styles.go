@@ -1,4 +1,4 @@
-package browse
+package ntfilepicker
 
 import "charm.land/lipgloss/v2"
 
@@ -34,7 +34,7 @@ type Styles struct {
 	Footer    lipgloss.Style
 }
 
-// DefaultStyles are the colors gloss's browser has always used, and a few
+// DefaultStyles are the colors the chooser has always used in gloss, and a few
 // more in keeping.
 func DefaultStyles() Styles {
 	pink, purple, grey := lipgloss.Color("212"), lipgloss.Color("99"), lipgloss.Color("244")

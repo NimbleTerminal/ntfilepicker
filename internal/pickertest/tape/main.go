@@ -1,7 +1,7 @@
-// Command tape writes a browsetest script as a VHS tape.
+// Command tape writes a pickertest script as a VHS tape.
 //
-//	go run ./internal/browse/browsetest/tape -cmd "gloss examples" -o browser.gif \
-//	    internal/browse/testdata/scripts/columns.txt > browser.tape
+//	go run ./internal/pickertest/tape -cmd "pick ." -o browser.gif \
+//	    testdata/scripts/columns.txt > browser.tape
 //	vhs browser.tape
 package main
 
@@ -11,11 +11,11 @@ import (
 	"os"
 	"strings"
 
-	"nimbleterminal.dev/gloss/internal/browse/browsetest"
+	"nimbleterminal.dev/ntfilepicker/internal/pickertest"
 )
 
 func main() {
-	var o browsetest.TapeOptions
+	var o pickertest.TapeOptions
 	flag.StringVar(&o.Command, "cmd", "", "the command that starts the program, typed at a shell")
 	flag.StringVar(&o.Output, "o", "", "the file the tape records, such as browser.gif")
 	flag.IntVar(&o.FontSize, "font", 0, "the font size (default 16)")
@@ -37,7 +37,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "usage: tape [-cmd COMMAND] [-o OUTPUT] SCRIPT")
 		os.Exit(2)
 	}
-	tape, err := browsetest.Tape(flag.Arg(0), o)
+	tape, err := pickertest.Tape(flag.Arg(0), o)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "tape:", err)
 		os.Exit(1)

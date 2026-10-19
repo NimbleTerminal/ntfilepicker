@@ -1,8 +1,8 @@
-// Package browse is a file chooser for Bubble Tea: a folder shown in one
+// Package ntfilepicker is a file chooser for Bubble Tea: a folder shown in one
 // of several layouts, filtered by what is typed, and walked with the arrow
 // keys, Tab completion, breadcrumbs, or the mouse.
 //
-// It is a component of its own. It knows nothing of gloss: what gloss adds
+// It was written for gloss, and knows nothing of it: what a host adds
 // (marks for the kinds of file, a sort, which files may be chosen) comes
 // in by options. Any [fs.ReadDirFS] will do, so tests use an in-memory one.
 //
@@ -14,14 +14,14 @@
 //
 // A host drives it like any bubble:
 //
-//	m := browse.New(os.DirFS("/").(fs.ReadDirFS), "/home/me")
+//	m := ntfilepicker.New(os.DirFS("/").(fs.ReadDirFS), "/home/me")
 //	cmd := m.Init()
 //	m, cmd = m.Update(msg)
 //	if path, ok := m.Chosen(); ok { ... }
 //
 // Esc is the host's: it should clear a filter ([Model.ClearFilter]) while
 // there is one and leave otherwise.
-package browse
+package ntfilepicker
 
 import (
 	"io/fs"
@@ -112,6 +112,10 @@ func WithLayout(l Layout) Option { return func(m *Model) { m.layout = l } }
 // WithPrompt sets what stands before the filter.
 func WithPrompt(p string) Option { return func(m *Model) { m.prompt = p } }
 
+// WithUnchoosableNote sets what the details of a file that cannot be chosen
+// say of it, such as why; empty says nothing.
+func WithUnchoosableNote(note string) Option { return func(m *Model) { m.unchoosable = note } }
+
 // WithFooter shows, or hides, the line under the folder that counts its
 // rows and says what is wrong with it.
 func WithFooter(show bool) Option { return func(m *Model) { m.footer = show } }
@@ -175,16 +179,17 @@ type Model struct {
 
 	width, height int
 
-	layout     Layout
-	marker     func(fs.DirEntry) string
-	sort       func(a, b fs.DirEntry) int
-	selectable func(fs.DirEntry) bool
-	showHidden bool
-	prompt     string
-	footer     bool
-	maxColumns int
-	styles     Styles
-	keys       KeyMap
+	layout      Layout
+	marker      func(fs.DirEntry) string
+	sort        func(a, b fs.DirEntry) int
+	selectable  func(fs.DirEntry) bool
+	unchoosable string
+	showHidden  bool
+	prompt      string
+	footer      bool
+	maxColumns  int
+	styles      Styles
+	keys        KeyMap
 }
 
 var nextID atomic.Uint64
@@ -196,20 +201,21 @@ func New(fsys fs.ReadDirFS, dir string, opts ...Option) Model {
 	in.Focus() // Its blink command is not wanted: the cursor is drawn here.
 	home, _ := os.UserHomeDir()
 	m := Model{
-		id:         nextID.Add(1),
-		fsys:       fsys,
-		home:       cleanAbs(home),
-		input:      in,
-		dir:        cleanAbs(dir),
-		lists:      map[string]*listing{},
-		memo:       map[string]string{},
-		width:      80,
-		height:     24,
-		prompt:     "  Filter: ",
-		footer:     true,
-		maxColumns: 4,
-		styles:     DefaultStyles(),
-		keys:       DefaultKeyMap(),
+		id:          nextID.Add(1),
+		fsys:        fsys,
+		home:        cleanAbs(home),
+		input:       in,
+		dir:         cleanAbs(dir),
+		lists:       map[string]*listing{},
+		memo:        map[string]string{},
+		width:       80,
+		height:      24,
+		prompt:      "  Filter: ",
+		unchoosable: "This file cannot be chosen",
+		footer:      true,
+		maxColumns:  4,
+		styles:      DefaultStyles(),
+		keys:        DefaultKeyMap(),
 	}
 	if home == "" {
 		m.home = ""

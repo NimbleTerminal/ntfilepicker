@@ -1,4 +1,4 @@
-package browsetest_test
+package pickertest_test
 
 import (
 	"errors"
@@ -11,11 +11,11 @@ import (
 	"time"
 
 	tea "charm.land/bubbletea/v2"
-	"nimbleterminal.dev/gloss/internal/browse/browsetest"
+	"nimbleterminal.dev/ntfilepicker/internal/pickertest"
 )
 
 func TestFS(t *testing.T) {
-	f := browsetest.NewFS("/a/b/c.txt 12", "a/d/", "e.md @2025-12-25", "g.txt = hello")
+	f := pickertest.NewFS("/a/b/c.txt 12", "a/d/", "e.md @2025-12-25", "g.txt = hello")
 	entries, err := f.ReadDir("a")
 	if err != nil || len(entries) != 2 || entries[0].Name() != "b" || entries[1].Name() != "d" {
 		t.Fatalf("ReadDir(a) = %v, %v", entries, err)
@@ -58,7 +58,7 @@ func TestParseKey(t *testing.T) {
 		"enter": "enter", "ctrl+n": "ctrl+n", "shift+tab": "shift+tab", "alt+up": "alt+up",
 		"a": "a", "G": "G", "space": "space", "+": "+", "ctrl++": "ctrl++", "pgdown": "pgdown", "backspace": "backspace",
 	} {
-		k, err := browsetest.ParseKey(name)
+		k, err := pickertest.ParseKey(name)
 		if err != nil {
 			t.Errorf("ParseKey(%q): %v", name, err)
 			continue
@@ -68,7 +68,7 @@ func TestParseKey(t *testing.T) {
 		}
 	}
 	for _, bad := range []string{"", "hyper+a", "wibble"} {
-		if _, err := browsetest.ParseKey(bad); err == nil {
+		if _, err := pickertest.ParseKey(bad); err == nil {
 			t.Errorf("ParseKey(%q) should fail", bad)
 		}
 	}
@@ -119,7 +119,7 @@ func (m toy) Update(msg tea.Msg) (toy, tea.Cmd) {
 func (m toy) View() string { return "typed: " + m.typed + "\n" + strings.Join(m.names, "\n") }
 
 func TestDriver(t *testing.T) {
-	d := browsetest.New(t, toy{fsys: browsetest.NewFS("x.txt", "y.txt")}, 30, 5)
+	d := pickertest.New(t, toy{fsys: pickertest.NewFS("x.txt", "y.txt")}, 30, 5)
 	d.Patience = 20 * time.Millisecond
 	if !d.Screen().Contains("x.txt") {
 		t.Fatalf("Init's read was not delivered:\n%s", d.Screen())
@@ -140,10 +140,10 @@ func TestDriver(t *testing.T) {
 	if err := d.Screen().Fits(); err != nil {
 		t.Errorf("fits: %v", err)
 	}
-	if err := (browsetest.Screen{Raw: "abc\ndef", Width: 2, Height: 5}).Fits(); err == nil {
+	if err := (pickertest.Screen{Raw: "abc\ndef", Width: 2, Height: 5}).Fits(); err == nil {
 		t.Errorf("a wide screen should not fit")
 	}
-	if err := (browsetest.Screen{Raw: "a\nb\nc", Width: 5, Height: 2}).Fits(); err == nil {
+	if err := (pickertest.Screen{Raw: "a\nb\nc", Width: 5, Height: 2}).Fits(); err == nil {
 		t.Errorf("a tall screen should not fit")
 	}
 }
@@ -155,18 +155,18 @@ func TestScript(t *testing.T) {
 	if err := os.WriteFile(file, []byte(script), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	cfg := browsetest.Config[toy]{
-		New:   func(f *browsetest.FS, _ string, _ map[string]string) toy { return toy{fsys: f} },
+	cfg := pickertest.Config[toy]{
+		New:   func(f *pickertest.FS, _ string, _ map[string]string) toy { return toy{fsys: f} },
 		Probe: func(m toy) map[string]string { return map[string]string{"typed": m.typed} },
 	}
 	if err := os.WriteFile(filepath.Join(dir, "s.golden"), []byte("# hello\n\n=== one (30x4)\ntyped: hi\nbar\nfoo.txt\n\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	browsetest.RunScript(t, cfg, file)
+	pickertest.RunScript(t, cfg, file)
 }
 
 func TestFSQuotedNamesAndFromDir(t *testing.T) {
-	f := browsetest.NewFS(`"home/two words.txt" 12 @2025-12-25`, `"home/a b/"`, "home/plain.txt")
+	f := pickertest.NewFS(`"home/two words.txt" 12 @2025-12-25`, `"home/a b/"`, "home/plain.txt")
 	entries, err := f.ReadDir("home")
 	if err != nil || len(entries) != 3 {
 		t.Fatalf("ReadDir = %v, %v", entries, err)
@@ -189,11 +189,11 @@ func TestFSQuotedNamesAndFromDir(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	lines, err := browsetest.FSFromDir(dir, "/fixture", 2, 100)
+	lines, err := pickertest.FSFromDir(dir, "/fixture", 2, 100)
 	if err != nil {
 		t.Fatal(err)
 	}
-	g := browsetest.NewFS(lines...)
+	g := pickertest.NewFS(lines...)
 	root, _ := g.ReadDir("fixture")
 	if len(root) != 3 || root[1].Name() != "my notes.md" {
 		t.Fatalf("root: %v", lines)
@@ -204,10 +204,10 @@ func TestFSQuotedNamesAndFromDir(t *testing.T) {
 	if deep, _ := g.ReadDir("fixture/sub/deep"); len(deep) != 0 {
 		t.Errorf("depth 2 stops before sub/deep/x.png: %v", deep)
 	}
-	if limited, _ := browsetest.FSFromDir(dir, "x", 9, 2); len(limited) != 2 {
+	if limited, _ := pickertest.FSFromDir(dir, "x", 9, 2); len(limited) != 2 {
 		t.Errorf("limit of 2 entries gave %d", len(limited))
 	}
-	if len(browsetest.NewFS(browsetest.DemoLines()...).Reads()) != 0 {
+	if len(pickertest.NewFS(pickertest.DemoLines()...).Reads()) != 0 {
 		t.Error("building the demo reads nothing")
 	}
 }
@@ -232,7 +232,7 @@ func TestScreenProblems(t *testing.T) {
 		{"a carriage return", "a\rb", 9, 1, []string{"U+000D"}},
 		{"a bell outside an escape", "a\x07b", 9, 1, []string{"U+0007"}},
 	} {
-		got := browsetest.Screen{Raw: tc.raw, Width: tc.w, Height: tc.h}.Problems()
+		got := pickertest.Screen{Raw: tc.raw, Width: tc.w, Height: tc.h}.Problems()
 		if len(got) != len(tc.expect) {
 			t.Errorf("%s: problems %q, want %q", tc.name, got, tc.expect)
 			continue
@@ -243,16 +243,16 @@ func TestScreenProblems(t *testing.T) {
 			}
 		}
 	}
-	if err := (browsetest.Screen{Raw: "a\tb\nc", Width: 9, Height: 1}).Fits(); err == nil || !strings.Contains(err.Error(), "rows") || !strings.Contains(err.Error(), "control") {
+	if err := (pickertest.Screen{Raw: "a\tb\nc", Width: 9, Height: 1}).Fits(); err == nil || !strings.Contains(err.Error(), "rows") || !strings.Contains(err.Error(), "control") {
 		t.Errorf("Fits should report every problem: %v", err)
 	}
-	if !(browsetest.Screen{Raw: "x\x1b[31my\x1b[m"}).RawContains("\x1b[31m") || (browsetest.Screen{Raw: "xy"}).RawContains("\x1b") {
+	if !(pickertest.Screen{Raw: "x\x1b[31my\x1b[m"}).RawContains("\x1b[31m") || (pickertest.Screen{Raw: "xy"}).RawContains("\x1b") {
 		t.Error("RawContains looks at the view as drawn")
 	}
 }
 
 func TestFSLinks(t *testing.T) {
-	f := browsetest.NewFS("a/docs/readme.md 5", "a/here -> /a/docs", "a/readme -> a/docs/readme.md", "a/gone -> /nowhere", "a/loop -> /a/loop")
+	f := pickertest.NewFS("a/docs/readme.md 5", "a/here -> /a/docs", "a/readme -> a/docs/readme.md", "a/gone -> /nowhere", "a/loop -> /a/loop")
 	entries, _ := f.ReadDir("a")
 	var names []string
 	for _, e := range entries {

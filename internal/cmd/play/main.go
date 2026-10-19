@@ -1,12 +1,12 @@
 // Command play is the file chooser in your terminal over an in-memory
-// filesystem, the way the browsetest harness sees it: to try it, to record
+// filesystem, the way the pickertest harness sees it: to try it, to record
 // what you do as a script, and to replay a script step by step.
 //
-//	go run ./internal/browse/cmd/play                       # the demo tree
-//	go run ./internal/browse/cmd/play -script FILE          # that script's tree and options
-//	go run ./internal/browse/cmd/play -from ~/Downloads     # a copy of a real folder
-//	go run ./internal/browse/cmd/play -record NEW.txt       # and write what you do as a script
-//	go run ./internal/browse/cmd/play -replay -script FILE  # watch a script, its checks shown
+//	go run ./internal/cmd/play                       # the demo tree
+//	go run ./internal/cmd/play -script FILE          # that script's tree and options
+//	go run ./internal/cmd/play -from ~/Downloads     # a copy of a real folder
+//	go run ./internal/cmd/play -record NEW.txt       # and write what you do as a script
+//	go run ./internal/cmd/play -replay -script FILE  # watch a script, its checks shown
 package main
 
 import (
@@ -17,8 +17,8 @@ import (
 	"strings"
 	"time"
 
-	"nimbleterminal.dev/gloss/internal/browse/browsecfg"
-	"nimbleterminal.dev/gloss/internal/browse/browsetest"
+	"nimbleterminal.dev/ntfilepicker/internal/pickercfg"
+	"nimbleterminal.dev/ntfilepicker/internal/pickertest"
 )
 
 func main() {
@@ -34,16 +34,16 @@ func main() {
 		start  = flag.String("start", "", "the folder to start in")
 	)
 	var options optionFlags
-	flag.Var(&options, "option", "an option for the chooser, NAME=VALUE ("+browsecfg.Options+"); repeatable")
+	flag.Var(&options, "option", "an option for the chooser, NAME=VALUE ("+pickercfg.Options+"); repeatable")
 	flag.Parse()
 
-	o := browsetest.PlayOptions{
+	o := pickertest.PlayOptions{
 		Script: *script, Record: *record, Replay: *replay, Delay: *delay, Start: *start,
-		Options: options.m, AssertKeys: browsecfg.StateKeys,
+		Options: options.m, AssertKeys: pickercfg.StateKeys,
 	}
 	switch {
 	case *from != "":
-		lines, err := browsetest.FSFromDir(*from, "/fixture", *depth, *limit)
+		lines, err := pickertest.FSFromDir(*from, "/fixture", *depth, *limit)
 		if err != nil {
 			fail(err)
 		}
@@ -53,7 +53,7 @@ func main() {
 		}
 		fmt.Fprintf(os.Stderr, "copied %d entries of %s to /fixture\n", len(lines), *from)
 	case *script == "":
-		o.FS = browsetest.DemoLines()
+		o.FS = pickertest.DemoLines()
 		if o.Start == "" {
 			o.Start = "/home/evan"
 		}
@@ -69,7 +69,7 @@ func main() {
 	} else if *record != "" {
 		o.Width, o.Height = 90, 20
 	}
-	if err := browsetest.Play(browsecfg.Config(), o); err != nil {
+	if err := pickertest.Play(pickercfg.Config(), o); err != nil {
 		fail(err)
 	}
 }

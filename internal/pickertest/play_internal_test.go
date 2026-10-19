@@ -1,4 +1,4 @@
-package browsetest
+package pickertest
 
 import (
 	"io/fs"

@@ -1,4 +1,4 @@
-package browsetest
+package pickertest
 
 import (
 	"fmt"
@@ -90,7 +90,7 @@ func quoteValue(v string) string {
 // of keys joined, a snapshot of the first screen at the start.
 func (r *recorder) script() string {
 	var b strings.Builder
-	b.WriteString("# Recorded with browse:play; edit freely. Add checks (expect, state) where it matters.\n")
+	b.WriteString("# Recorded with task play; edit freely. Add checks (expect, state) where it matters.\n")
 	b.WriteString("-- fs --\n")
 	for _, l := range r.fs {
 		b.WriteString(l + "\n")

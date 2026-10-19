@@ -1,13 +1,13 @@
-# browsetest
+# pickertest
 
 A test harness for [Bubble Tea](https://github.com/charmbracelet/bubbletea) (v2)
-components, written for gloss's file chooser (`internal/browse`) and kept free of
+components, written for ntfilepicker and kept free of
 it: it needs only a component with `Init`, `Update`, and `View`. It drives the
 component the way a person would, with keys, clicks, and resizes, and records what
 the screen looked like as plain text you can read in a diff.
 
-> **Status.** This lives inside gloss for now and is named for the chooser it
-> tests. It is meant to be taken out as a general tool; see
+> **Status.** This is internal to ntfilepicker for now and is named for the chooser
+> it tests. It is meant to be taken out as a general tool; see
 > [Taking it out](#taking-it-out) for what is generic, what is not, and what
 > would change.
 
@@ -40,9 +40,9 @@ it at a folder of scripts:
 
 ```go
 func TestScripts(t *testing.T) {
-	browsetest.RunDir(t, browsetest.Config[chooser.Model]{
+	pickertest.RunDir(t, pickertest.Config[chooser.Model]{
 		Strict: true, // check every screen: see "Soundness checks"
-		New: func(fsys *browsetest.FS, start string, options map[string]string) chooser.Model {
+		New: func(fsys *pickertest.FS, start string, options map[string]string) chooser.Model {
 			return chooser.New(fsys, start /* , options by name... */)
 		},
 		Probe: func(m chooser.Model) map[string]string {
@@ -116,7 +116,7 @@ describes a real folder (names, sizes, dates; not contents) as such lines, and
 ### `Driver`: sending input, settling the result
 
 ```go
-d := browsetest.New(t, model, 80, 24) // sends the size, runs Init, settles
+d := pickertest.New(t, model, 80, 24) // sends the size, runs Init, settles
 d.Press("down", "ctrl+n", "alt+up", "enter")
 d.Type("hello")
 d.Click(12, 3)
@@ -199,13 +199,13 @@ action, is checked by `Screen.Problems` for the faults that mess up a terminal:
 
 Escape sequences that style the text are not counted. A test that sweeps your
 component over many sizes and awkward names with this on, finding what a single
-hand-picked case would not, is the best use of it; `internal/browse/sweep_test.go`
+hand-picked case would not, is the best use of it; `sweep_test.go` at the module root
 is an example.
 
 ## Tapes: scripts as VHS recordings
 
 ```sh
-go run ./internal/browse/browsetest/tape -cmd "gloss examples" -o demo.gif \
+go run ./internal/pickertest/tape -cmd "pick ." -o demo.gif \
     -keys alt+up=Ctrl+Up,alt+left=Ctrl+O -pause 500ms script.txt > demo.tape
 vhs demo.tape     # needs vhs, ttyd, and ffmpeg
 ```
@@ -224,7 +224,7 @@ scripts are ones it accepts.
 The harness with a person at the keys, on the same in-memory trees:
 
 ```go
-browsetest.Play(cfg, browsetest.PlayOptions{
+pickertest.Play(cfg, pickertest.PlayOptions{
 	Script: "testdata/scripts/places.txt", // its tree and options; or FS: lines, Start: "/"
 	Record: "new.txt",                     // write what you do as a script
 	Replay: false,                         // or step through Script instead
@@ -245,7 +245,7 @@ browsetest.Play(cfg, browsetest.PlayOptions{
   failing as it is met, and `Play` returns an error if any failed.
 
 A command that wraps this for your component is a few lines of `main` (see
-`internal/browse/cmd/play`). Because the playground takes `F1` to `F3`, a
+`internal/cmd/play`). Because the playground takes `F1` to `F3`, a
 component that uses them is not a fit as it is.
 
 ## Wiring a component
@@ -289,10 +289,10 @@ It is meant to become its own module. What that would mean:
   thing that would change.
 - **Chooser-flavored names.** The package name, `DemoLines`, and the README's
   examples. `play`'s `F1`-`F3` hotkeys are a choice to make configurable.
-- **What lives outside this package, with the chooser.** `../browsecfg` (how a
+- **What lives outside this package, with the chooser.** `../pickercfg` (how a
   script's `option` lines build the chooser, and what `state` can read),
-  `../cmd/play` (the playground's `main`), `../testdata/scripts` (the chooser's
-  scripts and goldens), and `../sweep_test.go`. A general tool would document this
+  `../cmd/play` (the playground's `main`), `../../testdata/scripts` (the chooser's
+  scripts and goldens), and `../../sweep_test.go`. A general tool would document this
   split: the harness here, the wiring beside the component.
 - **To add when it goes.** A stable public API (the unexported `step` and the
   script parser are used by `Tape` and `Play`; a script could be a public type),

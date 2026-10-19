@@ -1,4 +1,4 @@
-package browsetest
+package pickertest
 
 import (
 	"bufio"
@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-var update = flag.Bool("update-screens", false, "rewrite the golden screens of browsetest scripts")
+var update = flag.Bool("update-screens", false, "rewrite the golden screens of pickertest scripts")
 
 // Config says how scripts build the component they drive.
 type Config[M Component[M]] struct {
