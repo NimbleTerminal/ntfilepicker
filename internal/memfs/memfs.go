@@ -1,12 +1,8 @@
-// Package pickertest is a harness for testing file-chooser components: an
-// in-memory filesystem, a driver that sends keys and settles the commands a
-// component answers with, and a script runner whose golden screens are
-// readable by a person.
-//
-// It knows nothing of any one component: it needs only Init, Update, and
-// View, so the same scripts can characterize one chooser and then hold
-// another to it.
-package pickertest
+// Package memfs is an in-memory filesystem for file choosers: entries with
+// sizes, dates and links but no contents unless given, read latency, injected
+// errors, and counts of what was read. The pickertest harness and the demo
+// build their trees with it.
+package memfs
 
 import (
 	"bytes"
@@ -77,7 +73,7 @@ func (f *FS) Add(line string) {
 	if strings.HasPrefix(line, `"`) {
 		q, err := strconv.QuotedPrefix(line)
 		if err != nil {
-			panic(fmt.Sprintf("pickertest: bad quoted name in %q: %v", line, err))
+			panic(fmt.Sprintf("memfs: bad quoted name in %q: %v", line, err))
 		}
 		name, _ = strconv.Unquote(q)
 		rest = line[len(q):]
@@ -104,13 +100,13 @@ func (f *FS) Add(line string) {
 		if date, ok := strings.CutPrefix(extra, "@"); ok {
 			t, err := time.Parse("2006-01-02", date)
 			if err != nil {
-				panic(fmt.Sprintf("pickertest: bad date in %q: %v", line, err))
+				panic(fmt.Sprintf("memfs: bad date in %q: %v", line, err))
 			}
 			mod = t
 		} else if n, err := strconv.ParseInt(extra, 10, 64); err == nil {
 			size = n
 		} else {
-			panic(fmt.Sprintf("pickertest: bad field %q in %q", extra, line))
+			panic(fmt.Sprintf("memfs: bad field %q in %q", extra, line))
 		}
 	}
 	dir := strings.HasSuffix(name, "/")
