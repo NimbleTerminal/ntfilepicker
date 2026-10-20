@@ -1,6 +1,8 @@
 # `ntfilepicker` CHANGELOG
 
-## Unreleased
+## v0.1.0 (2026-10-19)
+
+First release.
 
 * Extract gloss's file chooser (`internal/browse` at gloss e21ce3f) as its own
   module. The package is `ntfilepicker`; its test harness, script options and
