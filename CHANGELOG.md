@@ -7,8 +7,9 @@
   `examples/pathpick`. The existing `Model` is unchanged.
 * Add a Path picker mode to the web demo, with action buttons, quoted results,
   and a Node smoke test over the pretend filesystem.
-* Update Go dependencies in both modules, including go-booba v0.10.6 and
-  Bubble Tea v2.1.1, and refresh the dependency notices.
+* Update Go dependencies in both modules, including go-booba v0.10.7 and
+  Bubble Tea v2.1.1, and refresh the dependency notices. The web demo's
+  box-drawing borders now join continuously through booba's updated renderer.
 
 ## v0.1.0 (2026-10-19)
 
