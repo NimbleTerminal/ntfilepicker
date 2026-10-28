@@ -145,7 +145,19 @@ var filters = func() []ntfilepicker.Filter {
 
 func main() {
 	name := flag.String("layout", "places", "the layout to start in: places, columns, or list")
+	widget := flag.String("widget", "browser", "the widget to try: browser or path")
 	flag.Parse()
+	if *widget == "path" {
+		if err := runPathDemo(); err != nil {
+			fmt.Fprintln(os.Stderr, "demo:", err)
+			os.Exit(1)
+		}
+		return
+	}
+	if *widget != "browser" {
+		fmt.Fprintf(os.Stderr, "demo: no widget %q\n", *widget)
+		os.Exit(2)
+	}
 	layout, ok := ntfilepicker.ParseLayout(*name)
 	if !ok {
 		fmt.Fprintf(os.Stderr, "demo: no layout %q\n", *name)

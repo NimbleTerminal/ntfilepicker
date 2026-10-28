@@ -190,6 +190,7 @@ tasks:
       - node --check web/site.js
       - node scripts/check-site.mjs
       - node scripts/smoke-demo.mjs
+      - node scripts/smoke-demo.mjs path
 
   serve-wasm-site:
     desc: 'Serve web/ at http://localhost:8000/ntfilepicker/ (matches GH Pages prefix)'

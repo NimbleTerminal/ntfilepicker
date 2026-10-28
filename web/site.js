@@ -1,15 +1,25 @@
 import { BoobaTerminal, installActionBar, installRendererHud, parseRendererFromURL } from './booba/booba.js';
 
 const layouts = { places: 'Places', columns: 'Columns', list: 'List' };
-const requested = new URLSearchParams(location.search).get('layout');
+const params = new URLSearchParams(location.search);
+const pathPicker = params.get('widget') === 'path';
+const requested = params.get('layout');
 const layout = Object.hasOwn(layouts, requested) ? requested : 'places';
 const status = document.querySelector('#status');
-document.querySelector('#title').textContent = `Pick a file · ${layouts[layout]}`;
+document.querySelector('#title').textContent = pathPicker ? 'Complete a path · Path picker' : `Pick a file · ${layouts[layout]}`;
 const restart = new URL(location.href);
-restart.searchParams.set('layout', layout);
+if (pathPicker) {
+  restart.searchParams.set('widget', 'path');
+  restart.searchParams.delete('layout');
+  document.querySelector('[data-widget="path"]').setAttribute('aria-current', 'page');
+  document.querySelector('#help').textContent = 'Type a path to fuzzy-filter · Tab enters a folder · Shift+Tab goes up · Enter chooses · Esc cancels · Ctrl+U starts over. Try Documents/budget to see quoting for spaces. The files are pretend. Click the terminal to focus.';
+} else {
+  restart.searchParams.set('layout', layout);
+  restart.searchParams.delete('widget');
+}
 document.querySelector('#restart').href = restart.href;
 for (const link of document.querySelectorAll('[data-layout]')) {
-  if (link.dataset.layout === layout) link.setAttribute('aria-current', 'page');
+  if (!pathPicker && link.dataset.layout === layout) link.setAttribute('aria-current', 'page');
 }
 function failed(error) {
   status.dataset.error = '';
@@ -18,7 +28,7 @@ function failed(error) {
 }
 async function main() {
   const go = new Go();
-  go.argv = ['demo', '-layout', layout];
+  go.argv = pathPicker ? ['demo', '-widget', 'path'] : ['demo', '-layout', layout];
   const response = await fetch('demos/demo.wasm');
   if (!response.ok) throw new Error(`Download failed (${response.status})`);
   const { instance } = await WebAssembly.instantiateStreaming(response, go.importObject);

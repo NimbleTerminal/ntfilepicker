@@ -130,6 +130,8 @@ from that root. Spaces and shell specials are quoted with POSIX single quotes,
 including embedded apostrophes. Use `WithPathQuote(false)` for raw paths passed
 to filesystem or process APIs, or when the host supplies its own quoting.
 [`examples/pathpick`](examples/pathpick/main.go) prints a raw native path.
+Try the [PathPicker web demo](https://nimbleterminal.github.io/ntfilepicker/?widget=path)
+over the pretend home folder, or run `go -C examples run ./demo -widget path`.
 
 Options are `WithPathStyles(Styles)`, `WithPathKeyMap(PathKeyMap)`,
 `WithPathMarker`, `WithPathShowHidden`, `WithPathDirsOnly`, `WithPathQuote`,

@@ -6,7 +6,8 @@ import vm from 'node:vm';
 import { setTimeout as delay } from 'node:timers/promises';
 vm.runInThisContext(await readFile('web/wasm_exec.js', 'utf8'));
 const go = new Go();
-go.argv = ['demo', '-layout', 'list'];
+const pathPicker = process.argv[2] === 'path';
+go.argv = pathPicker ? ['demo', '-widget', 'path'] : ['demo', '-layout', 'list'];
 let exitCode;
 go.exit = code => { exitCode = code; };
 const { instance } = await WebAssembly.instantiate(await readFile('web/demos/demo.wasm'), go.importObject);
@@ -19,7 +20,7 @@ async function expectOutput(text) {
     await delay(25);
     output += bubbletea_read();
   }
-  assert.ok(output.includes(text), `expected terminal output: ${text}`);
+  assert.ok(output.includes(text), `expected terminal output: ${text}\nreceived: ${JSON.stringify(output)}`);
   return output;
 }
 try {
@@ -33,23 +34,34 @@ try {
   const encoded = advertised.match(/:msg=([A-Za-z0-9+/=]+)/)?.[1];
   assert.ok(encoded, 'action status payload');
   const description = Buffer.from(encoded, 'base64').toString('utf8');
-  for (const label of ['Layout', 'Places', 'File types', 'Up a folder']) {
+  const controls = pathPicker ? ['Into folder', 'Up a folder', 'Choose path', 'Cancel'] : ['Layout', 'Places', 'File types', 'Up a folder'];
+  for (const label of controls) {
     assert.ok(description.includes(label), `advertised control: ${label}`);
   }
   bubbletea_write('Docu');
   await expectOutput('Docu');
-  bubbletea_write('\r');
+  bubbletea_write(pathPicker ? '\t' : '\r');
   await expectOutput('Recipes');
   bubbletea_write('2026');
   await expectOutput('budget');
   bubbletea_write('\r');
-  await expectOutput('Picked');
+  await expectOutput(pathPicker ? "'/home/ada/Documents/budget 2026.xlsx'" : 'Picked');
+  if (pathPicker) {
+    bubbletea_write('\x1b[Z'); // Shift-Tab: parent, using the cached listing.
+    await expectOutput('Desktop');
+    bubbletea_write('projects/website/');
+    await expectOutput('index.html');
+    bubbletea_write('\x1b');
+    await expectOutput('Type to try another path.');
+  }
   bubbletea_resize(30, 8);
-  await expectOutput('Picked');
+  await expectOutput(pathPicker ? 'Complete a path' : 'Picked');
   bubbletea_write('\x03');
   await running;
   assert.equal(exitCode, 0);
-  console.log('Demo: startup, actions, filter, open a folder, pick a file, resize, and quit passed');
+  console.log(pathPicker
+    ? 'Path picker: actions, filter, descend, quoted choice, parent, typed path, cancel, resize, and quit passed'
+    : 'Demo: startup, actions, filter, open a folder, pick a file, resize, and quit passed');
 } finally {
   clearTimeout(timeout);
 }

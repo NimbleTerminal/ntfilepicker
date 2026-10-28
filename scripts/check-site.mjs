@@ -17,10 +17,12 @@ assert.ok(WebAssembly.validate(bytes), 'valid WASM');
 const html = await readFile('web/index.html', 'utf8');
 const layouts = [...html.matchAll(/data-layout="([^"]+)"/g)].map(m => m[1]);
 assert.deepEqual(layouts, ['places', 'columns', 'list'], 'layout cards');
+assert.ok(html.includes('href="?widget=path" data-widget="path"'), 'path picker card');
 const js = await readFile('web/site.js', 'utf8');
 for (const layout of layouts) assert.ok(js.includes(`${layout}:`), `${layout}: site.js entry`);
+assert.ok(js.includes("['demo', '-widget', 'path']"), 'path picker launch arguments');
 for (const [, path] of html.matchAll(/(?:src|href)="([^"?#]+)"/g)) {
   if (/^(https?:|\.\/)/.test(path)) continue;
   await access(`web/${path}`);
 }
-console.log(`Site links, runtime assets, and ${layouts.length} layouts checked.`);
+console.log(`Site links, runtime assets, ${layouts.length} layouts, and the path picker checked.`);

@@ -98,6 +98,9 @@ and view in `pathpicker.go`. Its scripts and golden screens are in
 `testdata/pathpicker`; `task screens` rewrites them too. `examples/pathpick`
 prints a raw native path from the widget. Run it with
 `go -C examples run ./pathpick`.
+The shared browser demo also hosts it with `-widget path`; the site's Path picker
+card selects this mode with `?widget=path`. Its Node smoke test checks descent,
+quoted choices, parent navigation, typed paths, cancellation and resizing.
 
 `examples` is a module of its own, so go-booba and the demo's needs stay out
 of the library's `go.mod`; it points at the library with a `replace`.
