@@ -1,6 +1,6 @@
 # `ntfilepicker` CHANGELOG
 
-## Unreleased
+## v0.2.0 (2026-10-28)
 
 * Add `PathPicker`, a compact path completer with directory navigation, fuzzy
   filtering, shell quoting, configurable keys and styles, and an example in
@@ -8,8 +8,9 @@
 * Add a Path picker mode to the web demo, with action buttons, quoted results,
   and a Node smoke test over the pretend filesystem.
 * Update Go dependencies in both modules, including go-booba v0.10.7 and
-  Bubble Tea v2.1.1, and refresh the dependency notices. The web demo's
-  box-drawing borders now join continuously through booba's updated renderer.
+  Bubble Tea v2.1.1, and refresh the dependency notices.
+* Fix gaps in the web demo's box-drawing borders through go-booba's updated
+  ghostty-web renderer.
 
 ## v0.1.0 (2026-10-19)
 
