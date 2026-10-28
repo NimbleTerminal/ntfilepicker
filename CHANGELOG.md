@@ -1,5 +1,10 @@
 # `ntfilepicker` CHANGELOG
 
+## Unreleased
+
+* Update Go dependencies in both modules, including go-booba v0.10.6 and
+  Bubble Tea v2.1.1, and refresh the dependency notices.
+
 ## v0.1.0 (2026-10-19)
 
 First release.
