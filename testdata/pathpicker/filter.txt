@@ -1,0 +1,25 @@
+-- fs --
+work/zebra/
+work/alpha/
+work/a.txt
+work/ba.txt
+work/.hidden
+-- script --
+start /work
+size 24 4
+type a
+snapshot folders-first
+press end
+snapshot last
+press home
+snapshot first
+press ctrl+u
+type .
+snapshot hidden
+press ctrl+u
+type missing
+snapshot no-match
+press shift+tab
+snapshot root
+press shift+tab
+state filter /

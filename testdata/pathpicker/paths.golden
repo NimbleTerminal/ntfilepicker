@@ -1,0 +1,12 @@
+=== absolute (30x5)
+> /other/re
+> result.txt
+
+=== relative-parent (30x5)
+> ../other/
+> result.txt
+
+=== missing (30x5)
+> project/no-match
+  No matching files.
+

@@ -1,0 +1,30 @@
+=== initial (34x6)
+>
+> projects/
+  readme.md
+  report.txt
+
+=== filtered (34x6)
+> pr
+> projects/
+  report.txt
+
+=== descended (34x6)
+> projects/
+> demo/
+  notes.md
+
+=== nested (34x6)
+> projects/demo/
+> main.go
+  read me.txt
+
+=== parent (34x6)
+> /home/reader/projects/
+> demo/
+  notes.md
+
+=== spaces (34x6)
+> me/reader/projects/demo/read me
+> read me.txt
+

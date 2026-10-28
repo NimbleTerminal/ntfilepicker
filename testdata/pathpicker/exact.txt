@@ -1,0 +1,15 @@
+-- fs --
+work/abc/file
+work/a
+-- script --
+start /work
+size 24 4
+type a
+snapshot exact-file-below-directory
+press enter
+state chosen /work/a
+press home enter
+state chosen /work/abc
+press ctrl+u
+type missing
+snapshot no-choice

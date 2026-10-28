@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* Add `PathPicker`, a compact path completer with directory navigation, fuzzy
+  filtering, shell quoting, configurable keys and styles, and an example in
+  `examples/pathpick`. The existing `Model` is unchanged.
 * Update Go dependencies in both modules, including go-booba v0.10.6 and
   Bubble Tea v2.1.1, and refresh the dependency notices.
 

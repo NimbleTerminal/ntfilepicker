@@ -1,0 +1,26 @@
+-- fs --
+work/project/notes.txt
+work/readme.md
+other/result.txt
+-- script --
+start /work
+size 30 5
+type /other/re
+snapshot absolute
+press enter
+state chosen /other/result.txt
+press ctrl+u
+type ../other/
+snapshot relative-parent
+press enter
+state chosen /other/result.txt
+press ctrl+u
+type project/no-match
+snapshot missing
+press ctrl+u
+type project/
+press backspace
+state filter /work/
+reads /work 1
+press tab
+reads /work/project 1

@@ -1,0 +1,31 @@
+-- fs --
+home/reader/projects/demo/main.go
+"home/reader/projects/demo/read me.txt"
+home/reader/projects/notes.md
+home/reader/readme.md
+home/reader/report.txt
+home/reader/.secret
+-- script --
+start /home/reader
+size 34 6
+snapshot initial
+type pr
+snapshot filtered
+press tab
+state filter projects/
+snapshot descended
+type dm
+press tab
+state filter projects/demo/
+snapshot nested
+press backspace
+state filter /home/reader/projects/
+snapshot parent
+press tab
+reads /home/reader/projects/demo 1
+type "read me"
+snapshot spaces
+press enter
+state chosen "'/home/reader/projects/demo/read me.txt'"
+press esc
+state cancelled true

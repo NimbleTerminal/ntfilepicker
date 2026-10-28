@@ -92,6 +92,13 @@ the golden files is the review. `task bench` times typing and drawing in a folde
 
 ## Examples and the browser demo
 
+`PathPicker` is the compact path completer alongside `Model`. It reuses the
+listing cache, read replies, matching, and safe name drawing, with its own keys
+and view in `pathpicker.go`. Its scripts and golden screens are in
+`testdata/pathpicker`; `task screens` rewrites them too. `examples/pathpick`
+prints a raw native path from the widget. Run it with
+`go -C examples run ./pathpick`.
+
 `examples` is a module of its own, so go-booba and the demo's needs stay out
 of the library's `go.mod`; it points at the library with a `replace`.
 `examples/pick` is a chooser over the real filesystem; `examples/demo` is the

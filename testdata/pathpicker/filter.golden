@@ -1,0 +1,32 @@
+=== folders-first (24x4)
+> a
+> alpha/
+  zebra/
+  a.txt
+
+=== last (24x4)
+> a
+  zebra/
+  a.txt
+> ba.txt
+
+=== first (24x4)
+> a
+> alpha/
+  zebra/
+  a.txt
+
+=== hidden (24x4)
+> .
+> .hidden
+  a.txt
+  ba.txt
+
+=== no-match (24x4)
+> missing
+  No matching files.
+
+=== root (24x4)
+> /
+> work/
+

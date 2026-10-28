@@ -26,6 +26,7 @@ To try the examples from a clone:
 
 ```sh
 go -C examples run ./pick ~/Downloads   # prints the path you pick
+go -C examples run ./pathpick           # compact path completion
 go -C examples run ./demo               # the browser demo, in your terminal
 ```
 
@@ -94,6 +95,47 @@ for a host that can hand files to other apps.
 | Ctrl-L | next layout |
 | Ctrl-G | to the sidebar of places, and back |
 | Ctrl-F | the menu of kinds of file |
+
+## Compact path picker
+
+`PathPicker` lists one directory in a small popup. The host controls its size
+and placement; it has no sidebar, layouts, or history.
+
+```go
+picker := ntfilepicker.NewPathPicker(os.DirFS("/").(fs.ReadDirFS), "/home/me")
+picker.SetSize(48, 8)
+cmd := picker.Init() // Run this command, and any command returned by Update.
+
+// In Update:
+picker, cmd = picker.Update(msg)
+if path, ok := picker.Chosen(); ok {
+	// Insert path into shell input, then call picker.ClearChosen().
+}
+if picker.Cancelled() {
+	// Close the popup, then call picker.ClearCancelled() if reusing it.
+}
+// In View: place picker.View() where the popup belongs.
+```
+
+Typing fuzzy-filters names, with directories first. Tab enters the highlighted
+directory and completes that part of `FilterValue`; Shift-Tab goes up.
+Backspace goes up when the final path component is empty, including after `/`.
+↑/↓, PgUp/PgDn and Home/End move; Enter chooses a file or directory; Esc cancels.
+An exact name takes priority until you move the highlight yourself.
+Ctrl-U clears the whole input; Ctrl-W deletes a word.
+
+The filter is an unquoted path, relative to the starting directory or beginning
+with `/` for the filesystem's root. Choices are slash-separated absolute paths
+from that root. Spaces and shell specials are quoted with POSIX single quotes,
+including embedded apostrophes. Use `WithPathQuote(false)` for raw paths passed
+to filesystem or process APIs, or when the host supplies its own quoting.
+[`examples/pathpick`](examples/pathpick/main.go) prints a raw native path.
+
+Options are `WithPathStyles(Styles)`, `WithPathKeyMap(PathKeyMap)`,
+`WithPathMarker`, `WithPathShowHidden`, `WithPathDirsOnly`, `WithPathQuote`,
+`WithPathMaxRows` (10 entry rows by default), and `WithPathPrompt` (`"> "`).
+`SetFilter` returns a command; always run it. Directory reads are asynchronous
+and cached, and names use the same safe rendering as the full chooser.
 
 ## Developing
 

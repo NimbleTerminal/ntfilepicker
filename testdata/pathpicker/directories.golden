@@ -1,0 +1,10 @@
+=== directories-only (28x5)
+>
+> .hidden/
+  alpha/
+  beta/
+
+=== only-files (28x5)
+> alpha/
+  No matching files.
+

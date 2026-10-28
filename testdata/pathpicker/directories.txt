@@ -1,0 +1,23 @@
+-- fs --
+work/alpha/file
+work/beta/file
+work/a.txt
+work/.hidden/file
+-- script --
+start /work
+size 28 5
+option dirsonly true
+option hidden true
+option quote false
+snapshot directories-only
+reject a.txt
+press down enter
+state chosen /work/alpha
+press tab
+state filter alpha/
+snapshot only-files
+press enter
+state chosen /work/alpha
+press shift+tab
+press end enter
+state chosen /work/beta
