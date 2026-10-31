@@ -1,5 +1,14 @@
 # `ntfilepicker` CHANGELOG
 
+## Next booba dependency bump
+
+When adopting booba v0.11.0 or later, regenerate browser assets with
+`booba-assets` and move imports from `ghostty-web/ghostty-web.js` to
+`ntwebterm/ntwebterm.js` (under `static/` for served pages). The engine is
+ntwebterm, formerly NimbleMarkets' ghostty-web fork. Booba 0.11 retains the
+old module as a re-export and the old WASM path; those compatibility paths
+are scheduled for removal in 0.12. Existing dependency pins are unchanged.
+
 ## v0.2.0 (2026-10-28)
 
 * Add `PathPicker`, a compact path completer with directory navigation, fuzzy
