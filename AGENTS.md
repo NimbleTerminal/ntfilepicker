@@ -20,7 +20,7 @@ DEVELOP.md is for working on it; keep them, this file and CHANGELOG consistent.
 - `examples` (its own module): `pick`, a complete host over the real
   filesystem; `pathpick`, a compact path picker; `demo`, the chooser over a
   pretend home folder, native and WASM through booba; `internal/demorun`, the
-  booba action-bar wrapper.
+  booba (`nimbleterminal.dev/booba`) action-bar wrapper.
   `demo -widget path` is the compact widget's web demo (`?widget=path`).
 - `web`: the demo page (`index.html`, `site.css`, `site.js` tracked; the rest
   generated). `wasm.work`: Bubble Tea/clipboard forks for WASM only.

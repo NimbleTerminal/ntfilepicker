@@ -102,8 +102,9 @@ The shared browser demo also hosts it with `-widget path`; the site's Path picke
 card selects this mode with `?widget=path`. Its Node smoke test checks descent,
 quoted choices, parent navigation, typed paths, cancellation and resizing.
 
-`examples` is a module of its own, so go-booba and the demo's needs stay out
-of the library's `go.mod`; it points at the library with a `replace`.
+`examples` is a module of its own, so booba (`nimbleterminal.dev/booba`) and
+the demo's needs stay out of the library's `go.mod`; it points at the library
+with a `replace`.
 `examples/pick` is a chooser over the real filesystem; `examples/demo` is the
 chooser over a pretend home folder (`tree.go`, built with `internal/memfs`,
 whose reads are slowed on purpose), run by booba natively and in the browser.

@@ -14,7 +14,8 @@ gloss: marks for the kinds of file, the sort, and which files may be chosen
 come in by options. Any `fs.ReadDirFS` will do.
 
 [Try it in your browser](https://nimbleterminal.github.io/ntfilepicker/), over a
-pretend home folder: nothing is read from your computer.
+pretend home folder, powered by [booba](https://github.com/nimbleterminal/booba)
+and ntwebterm: nothing is read from your computer.
 
 Module `nimbleterminal.dev/ntfilepicker`, Go 1.26.8+.
 
